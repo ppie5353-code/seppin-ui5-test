@@ -49,14 +49,14 @@
                 }
             });
 
+            // VBox 생성 후 addStyleClass 호출
+            var oVBox = new sap.m.VBox({
+                items: [oInput, oButton, oResultText]
+            }).addStyleClass("sapUiSmallMargin");
+        
             new sap.m.Page({
-                title: "UI5 Proxy Connection Test",
-                content: [
-                    new sap.m.VBox({
-                        items: [oInput, oButton, oResultText],
-                        class: "sapUiSmallMargin"
-                    })
-                ]
+                title: "UI5 Proxy Test",
+                content: [oVBox]
             }).placeAt("content");
         });
     </script>
