@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>UI5 Proxy Test</title>
+    <script id="sap-ui-bootstrap"
+        src="https://ui5.sap.com/resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_horizon"
+        data-sap-ui-libs="sap.m"
+        data-sap-ui-async="true">
+    </script>
+
+    <script>
+        sap.ui.getCore().attachInit(function() {
+            // 2. 간단한 UI 구성
+            var oInput = new sap.m.Input({
+                placeholder: "프록시 URL 입력",
+                width: "100%",
+                value: "https://YOUR_PROXY_URL_HERE/api/test" // <-- 본인의 프록시 주소 입력
+            });
+
+            var oResultText = new sap.m.TextArea({
+                width: "100%",
+                rows: 10,
+                editable: false,
+                placeholder: "결과가 여기에 표시됩니다."
+            });
+
+            var oButton = new sap.m.Button({
+                text: "프록시 호출 테스트",
+                type: "Emphasized",
+                press: function() {
+                    var sUrl = oInput.getValue();
+                    oResultText.setValue("호출 중...");
+
+                    // 3. AJAX를 이용한 프록시 호출
+                    $.ajax({
+                        url: sUrl,
+                        method: "GET",
+                        success: function(data) {
+                            oResultText.setValue(JSON.stringify(data, null, 2));
+                            sap.m.MessageToast.show("성공!");
+                        },
+                        error: function(err) {
+                            oResultText.setValue("에러 발생:\n" + err.status + " " + err.statusText);
+                            sap.m.MessageToast.show("실패!");
+                        }
+                    });
+                }
+            });
+
+            new sap.m.Page({
+                title: "UI5 Proxy Connection Test",
+                content: [
+                    new sap.m.VBox({
+                        items: [oInput, oButton, oResultText],
+                        class: "sapUiSmallMargin"
+                    })
+                ]
+            }).placeAt("content");
+        });
+    </script>
+</head>
+<body class="sapUiBody" id="content">
+</body>
+</html>
