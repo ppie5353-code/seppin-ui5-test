@@ -38,9 +38,11 @@
                     width: "100%",
                     rows: 12,
                     editable: true,
-                    placeholder: "POST 데이터를 JSON 형식으로 입력해주세요",
-                    value: JSON.stringify(sData) // 예쁘게 들여쓰기된 문자열로 변환
+                    placeholder: "POST 데이터를 JSON 형식으로 입력해주세요"
                 });
+
+                // 생성된 직후에 데이터를 꽂아
+                oResultTextPost.setValue(JSON.stringify(sData, null, 2));
 
                 // 2. 결과 출력창
                 var oResultText = new sap.m.TextArea({
