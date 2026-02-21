@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>UI5 Proxy Test</title>
+    <title>UI5 GET/POST Proxy Test</title>
     <script id="sap-ui-bootstrap"
         src="https://ui5.sap.com/resources/sap-ui-core.js"
         data-sap-ui-theme="sap_horizon"
@@ -11,17 +11,17 @@
     </script>
 
     <script>
-        // 초기화 함수
         window.onload = function() {
             sap.ui.getCore().attachInit(function() {
                 
                 // 1. 입력 필드
                 var oInput = new sap.m.Input({
-                    placeholder: "https://your-proxy.com/api",
-                    width: "100%"
+                    placeholder: "https://your-proxy.com/api/test",
+                    width: "100%",
+                    value: "https://your-proxy.com/api/test" // 테스트 주소 기본값
                 });
 
-                // 2. 결과창
+                // 2. 결과 출력창
                 var oResultText = new sap.m.TextArea({
                     width: "100%",
                     rows: 15,
@@ -29,56 +29,77 @@
                     placeholder: "결과가 여기에 표시됩니다."
                 });
 
-                // 3. 버튼
-                var oButton = new sap.m.Button({
-                    text: "프록시 호출 테스트",
-                    type: "Emphasized",
-                    width: "100%",
-                    press: function() {
-                        var sUrl = oInput.getValue();
-                        if (!sUrl) {
-                            sap.m.MessageToast.show("URL을 입력해주세요.");
-                            return;
+                // --- 통신 로직 함수 ---
+                var fnCallProxy = function(sMethod) {
+                    var sUrl = oInput.getValue();
+                    if (!sUrl) {
+                        sap.m.MessageToast.show("URL을 입력해주세요.");
+                        return;
+                    }
+
+                    oResultText.setValue(sMethod + " 호출 중...");
+
+                    var oSettings = {
+                        url: sUrl,
+                        method: sMethod,
+                        success: function(data) {
+                            oResultText.setValue("--- " + sMethod + " 성공 ---\n" + JSON.stringify(data, null, 2));
+                            sap.m.MessageToast.show(sMethod + " 성공!");
+                        },
+                        error: function(err) {
+                            oResultText.setValue("--- " + sMethod + " 실패 ---\n코드: " + err.status + "\n내용: " + err.statusText);
+                            sap.m.MessageToast.show(sMethod + " 실패!");
                         }
+                    };
 
-                        oResultText.setValue("호출 중...");
-
-                        // jQuery를 이용한 AJAX 호출
-                        $.ajax({
-                            url: sUrl,
-                            method: "GET",
-                            success: function(data) {
-                                oResultText.setValue(JSON.stringify(data, null, 2));
-                                sap.m.MessageToast.show("성공!");
-                            },
-                            error: function(err) {
-                                oResultText.setValue("에러 발생!\n상태 코드: " + err.status + "\n내용: " + err.statusText);
-                                sap.m.MessageToast.show("실패!");
-                            }
+                    // POST일 경우에만 페이로드 추가
+                    if (sMethod === "POST") {
+                        oSettings.contentType = "application/json";
+                        oSettings.data = JSON.stringify({
+                            message: "UI5에서 보낸 POST 데이터",
+                            date: new Date().toLocaleString()
                         });
                     }
+
+                    $.ajax(oSettings);
+                };
+
+                // 3. 버튼들 (가로 배치)
+                var oBtnGet = new sap.m.Button({
+                    text: "GET 호출",
+                    type: "Default",
+                    press: function() { fnCallProxy("GET"); }
                 });
 
-                // 4. 레이아웃 배치 (VBox)
+                var oBtnPost = new sap.m.Button({
+                    text: "POST 호출",
+                    type: "Emphasized",
+                    press: function() { fnCallProxy("POST"); }
+                });
+
+                var oButtonBox = new sap.m.HBox({
+                    items: [oBtnGet, oBtnPost],
+                    gap: "10px" // 버튼 사이 간격
+                }).addStyleClass("sapUiSmallMarginBottom");
+
+                // 4. 레이아웃 조립
                 var oVBox = new sap.m.VBox({
                     items: [
-                        new sap.m.Label({ text: "프록시 주소 입력:", design: "Bold" }),
-                        oInput, 
-                        oButton, 
-                        new sap.m.Label({ text: "응답 결과:", design: "Bold" }).addStyleClass("sapUiSmallMarginTop"),
+                        new sap.m.Label({ text: "프록시 URL:", design: "Bold" }),
+                        oInput,
+                        new sap.m.Label({ text: "액션:", design: "Bold" }).addStyleClass("sapUiSmallMarginTop"),
+                        oButtonBox,
+                        new sap.m.Label({ text: "응답 결과:", design: "Bold" }),
                         oResultText
                     ]
-                });
-                
-                // 마진 추가
-                oVBox.addStyleClass("sapUiSmallMargin");
+                }).addStyleClass("sapUiSmallMargin");
 
-                // 5. 페이지 구성 및 렌더링
+                // 5. 화면 표시
                 new sap.m.Shell({
                     app: new sap.m.App({
                         pages: [
                             new sap.m.Page({
-                                title: "UI5 Proxy Connection Test",
+                                title: "UI5 Proxy Multi-Test (GET/POST)",
                                 content: [oVBox]
                             })
                         ]
@@ -89,5 +110,5 @@
     </script>
 </head>
 <body class="sapUiBody" id="content">
-    </body>
+</body>
 </html>
