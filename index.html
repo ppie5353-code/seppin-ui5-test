@@ -11,6 +11,18 @@
     </script>
 
     <script>
+        var sData = {
+            "UserName": "seeeeeppppp",
+            "FirstName": "Willie",
+            "LastName": "Ashmore",
+            "MiddleName": null,
+            "Age": null,
+            "Emails": [],
+            "Features": [],
+            "AddressInfo": [],
+            "HomeAddress": null
+        };
+        
         window.onload = function() {
             sap.ui.getCore().attachInit(function() {
                 
@@ -18,7 +30,16 @@
                 var oInput = new sap.m.Input({
                     placeholder: "https://your-proxy.com/api/test",
                     width: "100%",
-                    value: "https://your-proxy.com/api/test" // 테스트 주소 기본값
+                    value: "https://services.odata.org/TripPinRESTierService/(S(testsid))/People" 
+                });
+
+                // 1-1. POST 데이터 입력창 (수정됨: JSON 객체를 문자열로 변환하여 삽입)
+                var oResultTextPost = new sap.m.TextArea({
+                    width: "100%",
+                    rows: 12,
+                    editable: true,
+                    placeholder: "POST 데이터를 JSON 형식으로 입력해주세요",
+                    value: JSON.stringify(sData, null, 2) // 예쁘게 들여쓰기된 문자열로 변환
                 });
 
                 // 2. 결과 출력창
@@ -52,13 +73,10 @@
                         }
                     };
 
-                    // POST일 경우에만 페이로드 추가
+                    // POST일 경우에만 페이로드 추가 (수정됨: 화면의 텍스트를 그대로 가져와서 전송)
                     if (sMethod === "POST") {
                         oSettings.contentType = "application/json";
-                        oSettings.data = JSON.stringify({
-                            message: "UI5에서 보낸 POST 데이터",
-                            date: new Date().toLocaleString()
-                        });
+                        oSettings.data = oResultTextPost.getValue(); // TextArea의 문자열 값을 통째로 전송
                     }
 
                     $.ajax(oSettings);
@@ -79,14 +97,16 @@
 
                 var oButtonBox = new sap.m.HBox({
                     items: [oBtnGet, oBtnPost],
-                    gap: "10px" // 버튼 사이 간격
+                    gap: "10px"
                 }).addStyleClass("sapUiSmallMarginBottom");
 
-                // 4. 레이아웃 조립
+                // 4. 레이아웃 조립 (수정됨: oResultTextPost가 화면에 보이도록 추가)
                 var oVBox = new sap.m.VBox({
                     items: [
                         new sap.m.Label({ text: "프록시 URL:", design: "Bold" }),
                         oInput,
+                        new sap.m.Label({ text: "POST 페이로드 (직접 수정 가능):", design: "Bold" }).addStyleClass("sapUiSmallMarginTop"),
+                        oResultTextPost, // 화면에 POST 데이터 입력창 추가
                         new sap.m.Label({ text: "액션:", design: "Bold" }).addStyleClass("sapUiSmallMarginTop"),
                         oButtonBox,
                         new sap.m.Label({ text: "응답 결과:", design: "Bold" }),
